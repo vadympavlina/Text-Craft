@@ -1076,7 +1076,51 @@ function insertLink() {
 
 const HANDLES = ['nw','n','ne','e','se','s','sw','w'];
 
+/* ── Saved cursor range (before file dialog steals focus) ── */
+let savedRange = null;
+
+function saveCursor() {
+  const sel = window.getSelection();
+  if (sel && sel.rangeCount && editor.contains(sel.getRangeAt(0).commonAncestorContainer)) {
+    savedRange = sel.getRangeAt(0).cloneRange();
+  } else {
+    savedRange = null;
+  }
+}
+
+function insertWrapAtCursor(wrap) {
+  const p = document.createElement('p');
+  p.style.textAlign = 'center';
+  p.appendChild(wrap);
+
+  // Try saved range first, then live selection, then append to end
+  let range = savedRange;
+  if (!range) {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount && editor.contains(sel.getRangeAt(0).commonAncestorContainer)) {
+      range = sel.getRangeAt(0);
+    }
+  }
+
+  if (range) {
+    range.collapse(false);
+    range.insertNode(p);
+    // Move cursor after the inserted image
+    const after = document.createRange();
+    after.setStartAfter(p);
+    after.collapse(true);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(after);
+  } else {
+    editor.appendChild(p);
+  }
+
+  savedRange = null;
+}
+
 function triggerImageInsert() {
+  saveCursor(); // save before focus is lost to file dialog
   document.getElementById('imgFileInput').click();
 }
 
@@ -1086,17 +1130,7 @@ function insertImageFromFile(input) {
   const reader = new FileReader();
   reader.onload = e => {
     const wrap = createImgWrap(e.target.result, '100%', 'img-center');
-    const p = document.createElement('p');
-    p.style.textAlign = 'center';
-    p.appendChild(wrap);
-    const sel = window.getSelection();
-    if (sel && sel.rangeCount && editor.contains(sel.getRangeAt(0).commonAncestorContainer)) {
-      const range = sel.getRangeAt(0);
-      range.collapse(false);
-      range.insertNode(p);
-    } else {
-      editor.appendChild(p);
-    }
+    insertWrapAtCursor(wrap);
     selectWrap(wrap);
     tick();
   };
@@ -1797,6 +1831,12 @@ editor.addEventListener('paste', e => {
   for (const item of items) {
     if (item.type.startsWith('image/')) {
       e.preventDefault();
+      // Capture cursor NOW before anything steals focus
+      const sel = window.getSelection();
+      let pasteRange = null;
+      if (sel && sel.rangeCount && editor.contains(sel.getRangeAt(0).commonAncestorContainer)) {
+        pasteRange = sel.getRangeAt(0).cloneRange();
+      }
       const file = item.getAsFile();
       const reader = new FileReader();
       reader.onload = ev => {
@@ -1804,7 +1844,19 @@ editor.addEventListener('paste', e => {
         const p = document.createElement('p');
         p.style.textAlign = 'center';
         p.appendChild(wrap);
-        editor.appendChild(p);
+
+        if (pasteRange) {
+          pasteRange.collapse(false);
+          pasteRange.insertNode(p);
+          const after = document.createRange();
+          after.setStartAfter(p);
+          after.collapse(true);
+          const s = window.getSelection();
+          s.removeAllRanges();
+          s.addRange(after);
+        } else {
+          editor.appendChild(p);
+        }
         selectWrap(wrap);
         tick();
       };
