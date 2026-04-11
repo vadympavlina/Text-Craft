@@ -54,11 +54,12 @@ body {
   border-bottom:1px solid var(--border);
   display:flex;
   align-items:center;
-  padding:0 16px 0 18px;
-  gap:10px;
+  padding:0 12px 0 14px;
+  gap:8px;
   flex-shrink:0;
   box-shadow:var(--sh-sm);
   z-index:60;
+  min-width:0;
 }
 
 .brand {
@@ -71,6 +72,7 @@ body {
   border-radius:8px;
   display:flex;align-items:center;justify-content:center;
   box-shadow:0 2px 8px rgba(79,107,244,.3);
+  flex-shrink:0;
 }
 .brand-mark svg{width:14px;height:14px;color:#fff}
 .brand-name{
@@ -80,6 +82,11 @@ body {
 
 .topbar-div{width:1px;height:22px;background:var(--border);flex-shrink:0}
 
+/* Document title — grows to fill space */
+.doc-name-wrap {
+  flex:1; min-width:60px; max-width:260px;
+  display:flex; align-items:center;
+}
 .doc-name{
   border:none;outline:none;
   font-family:'Inter',system-ui,sans-serif;
@@ -88,28 +95,41 @@ body {
   background:transparent;
   padding:5px 8px;
   border-radius:var(--r);
-  min-width:160px;max-width:300px;
+  width:100%;
   transition:background .15s,box-shadow .15s;
+  min-width:0;
 }
 .doc-name:hover{background:var(--bg)}
 .doc-name:focus{background:var(--bg);box-shadow:0 0 0 2px rgba(79,107,244,.2)}
 
-.topbar-actions{margin-left:auto;display:flex;align-items:center;gap:6px;flex-shrink:0}
+/* Right-side action group */
+.topbar-actions{
+  margin-left:auto;
+  display:flex;align-items:center;gap:4px;
+  flex-shrink:0;
+}
 
 /* Buttons */
 .btn{
-  display:inline-flex;align-items:center;gap:6px;
-  height:32px;padding:0 13px;
+  display:inline-flex;align-items:center;gap:5px;
+  height:32px;padding:0 11px;
   border:1px solid transparent;border-radius:var(--r);
   font-family:'Inter',system-ui,sans-serif;
   font-size:13px;font-weight:500;
   cursor:pointer;
   transition:all .13s;
   white-space:nowrap;
+  flex-shrink:0;
 }
 .btn svg{width:13px;height:13px;flex-shrink:0}
+/* Icon-only variant for small screens */
+.btn .btn-label { display:inline; }
 .btn-ghost{background:transparent;color:var(--muted);border-color:transparent}
 .btn-ghost:hover{background:var(--bg);color:var(--text)}
+.btn-icon {
+  /* square icon-only button */
+  width:32px;padding:0;justify-content:center;
+}
 .btn-outline{
   background:var(--accent-bg);color:var(--accent);
   border-color:var(--accent-lt);
@@ -119,41 +139,90 @@ body {
 .btn-solid:hover{background:var(--accent-h);border-color:var(--accent-h)}
 .btn-solid:active{transform:scale(.97)}
 
-/* ═══════════ TOOLBAR ═══════════ */
-.toolbar {
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
-  display:flex;
-  align-items:center;
-  padding:0 10px;
-  gap:1px;
-  flex-shrink:0;
-  flex-wrap:wrap;
-  min-height:var(--toolbar);
-  max-height:92px; /* max 2 rows */
-  overflow:hidden;
-  z-index:55;
-  transition:max-height .2s;
-}
-.toolbar.expanded { max-height:none; }
-
-/* Overflow toggle button — visible only when toolbar wraps */
-.tb-more {
+/* Hamburger menu for topbar overflow on mobile */
+.topbar-menu-btn {
   display:none;
-  margin-left:auto;
-  width:30px;height:30px;
-  border:none;border-radius:var(--r);
-  background:transparent;cursor:pointer;
+  width:34px;height:34px;
+  border:1px solid var(--border);border-radius:var(--r);
+  background:var(--surface);cursor:pointer;
   color:var(--muted);
   align-items:center;justify-content:center;
-  transition:background .12s,color .12s;
   flex-shrink:0;
+  transition:background .12s,color .12s;
 }
-.tb-more:hover{background:var(--bg);color:var(--text)}
-.tb-more svg{width:15px;height:15px;pointer-events:none}
-.toolbar-overflow .tb-more { display:flex; }
+.topbar-menu-btn:hover{background:var(--bg);color:var(--text)}
+.topbar-menu-btn svg{width:15px;height:15px;pointer-events:none}
 
-.tb-sep{width:1px;height:20px;background:var(--border);margin:0 4px;flex-shrink:0}
+/* Dropdown from hamburger */
+.topbar-dropdown {
+  display:none;
+  position:absolute;
+  top:calc(var(--topbar) + 4px);
+  right:10px;
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:var(--r-lg);
+  box-shadow:var(--sh-lg);
+  padding:6px;
+  z-index:500;
+  min-width:190px;
+  flex-direction:column;
+  gap:2px;
+  animation:popIn .15s ease;
+}
+.topbar-dropdown.open { display:flex; }
+.topbar-dropdown .btn {
+  width:100%;justify-content:flex-start;
+  height:36px;border-radius:var(--r);
+  padding:0 10px;
+}
+.topbar-dropdown .btn .btn-label { display:inline !important; }
+.topbar-dd-sep { height:1px;background:var(--border);margin:3px 0; }
+
+/* ═══════════ TOOLBAR ═══════════ */
+.toolbar-wrap {
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+  z-index:55;
+  position:relative;
+}
+
+.toolbar {
+  display:flex;
+  align-items:center;
+  padding:0 6px;
+  gap:1px;
+  height:var(--toolbar);
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+  scroll-behavior:smooth;
+}
+.toolbar::-webkit-scrollbar { display:none; }
+
+/* Scroll arrows */
+.tb-scroll-btn {
+  display:none;
+  position:absolute;
+  top:0;bottom:0;
+  width:28px;
+  border:none;background:linear-gradient(to right, var(--surface) 60%, transparent);
+  cursor:pointer;
+  color:var(--muted);
+  align-items:center;justify-content:center;
+  z-index:2;
+  transition:color .12s;
+}
+.tb-scroll-btn:hover{color:var(--accent)}
+.tb-scroll-btn svg{width:14px;height:14px;pointer-events:none}
+.tb-scroll-btn.left { left:0; background:linear-gradient(to right, var(--surface) 60%, transparent); }
+.tb-scroll-btn.right{ right:0; background:linear-gradient(to left, var(--surface) 60%, transparent); }
+.toolbar-wrap.can-scroll-left  .tb-scroll-btn.left  { display:flex; }
+.toolbar-wrap.can-scroll-right .tb-scroll-btn.right { display:flex; }
+
+.tb-sep{width:1px;height:20px;background:var(--border);margin:0 3px;flex-shrink:0}
 
 /* Tool button */
 .tb{
@@ -180,15 +249,15 @@ body {
   font-family:'Inter',system-ui,sans-serif;
   font-size:12.5px;font-weight:500;
   color:var(--text);
-  padding:0 8px;
+  padding:0 6px;
   cursor:pointer;
   outline:none;
   transition:border-color .13s;
   flex-shrink:0;
 }
 .tb-select:hover,.tb-select:focus{border-color:var(--accent)}
-#blockStyle{min-width:108px}
-#fontFam{min-width:116px}
+#blockStyle{min-width:102px}
+#fontFam{min-width:110px}
 
 /* Font size control */
 .size-ctrl{
@@ -244,6 +313,27 @@ body {
 .col-btn input[type=color]{
   position:absolute;opacity:0;
   width:0;height:0;pointer-events:none;
+}
+
+/* ═══════════ RESPONSIVE TOPBAR ═══════════ */
+/* 900px — hide brand name */
+@media(max-width:900px){
+  .brand-name { display:none; }
+  .doc-name-wrap { max-width:200px; }
+}
+/* 720px — collapse action buttons to hamburger */
+@media(max-width:720px){
+  .topbar-actions .btn:not(.btn-solid):not(.btn-outline) { display:none; }
+  .topbar-menu-btn { display:flex; }
+  .topbar { position:relative; }
+  .doc-name-wrap { max-width:160px; }
+}
+/* 520px — also collapse export buttons to icon only */
+@media(max-width:520px){
+  .btn-outline .btn-label,
+  .btn-solid .btn-label { display:none; }
+  .btn-outline,.btn-solid { width:32px;padding:0;justify-content:center; }
+  .doc-name-wrap { max-width:110px; }
 }
 
 /* Tooltip */
@@ -623,6 +713,126 @@ body {
 }
 .sb-right{margin-left:auto}
 
+/* ═══════════ FOCUS MODE ═══════════ */
+body.focus-mode .topbar,
+body.focus-mode .toolbar,
+body.focus-mode .toc-sidebar,
+body.focus-mode .statusbar {
+  opacity:0; pointer-events:none; transition:opacity .3s;
+}
+body.focus-mode .scroll-area {
+  padding-top:60px;
+}
+body.focus-mode .page {
+  max-width:640px;
+  box-shadow:none;
+}
+.focus-exit {
+  display:none;
+  position:fixed;top:12px;right:16px;
+  z-index:9000;
+}
+body.focus-mode .focus-exit { display:flex; }
+
+/* ═══════════ FIND & REPLACE ═══════════ */
+.find-bar {
+  display:none;
+  position:fixed;
+  top:calc(var(--topbar) + var(--toolbar) + 8px);
+  right:12px;
+  /* Never wider than screen with safe margins */
+  width:min(360px, calc(100vw - 24px));
+  max-height:calc(100vh - var(--topbar) - var(--toolbar) - 32px);
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:var(--r-lg);
+  box-shadow:var(--sh-lg);
+  padding:10px 12px;
+  z-index:1000;
+  animation:popIn .15s ease;
+  flex-direction:column;
+  gap:7px;
+  overflow:hidden;
+  box-sizing:border-box;
+}
+.find-bar.open { display:flex; }
+
+.find-bar-row {
+  display:flex;
+  align-items:center;
+  gap:5px;
+  min-width:0;
+}
+.find-bar-label {
+  font-size:11px; color:var(--subtle); font-weight:600;
+  width:48px; min-width:48px; flex-shrink:0;
+}
+.find-inp {
+  flex:1; min-width:0;
+  height:28px; padding:0 8px;
+  border:1px solid var(--border2); border-radius:var(--r);
+  font-family:'Inter',system-ui,sans-serif; font-size:13px; color:var(--text);
+  background:var(--bg); outline:none;
+  transition:border-color .13s;
+}
+.find-inp:focus { border-color:var(--accent); }
+.find-nav { display:flex; gap:3px; flex-shrink:0; }
+.find-nav-btn {
+  width:26px; height:26px; border:1px solid var(--border); border-radius:5px;
+  background:var(--surface); cursor:pointer; color:var(--muted);
+  display:flex; align-items:center; justify-content:center;
+  transition:all .12s; flex-shrink:0;
+}
+.find-nav-btn:hover { background:var(--bg); color:var(--text); }
+.find-nav-btn svg { width:11px; height:11px; }
+.find-count {
+  font-size:11px; color:var(--subtle);
+  min-width:38px; max-width:54px;
+  text-align:center; flex-shrink:0;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.find-close {
+  width:24px; height:24px; border:none; background:transparent;
+  border-radius:4px; cursor:pointer; color:var(--subtle);
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+  transition:background .12s,color .12s;
+}
+.find-close:hover { background:var(--bg); color:var(--text); }
+.find-replace-row { display:flex; gap:4px; flex-shrink:0; flex-wrap:wrap; }
+.find-replace-btn {
+  height:26px; padding:0 9px; border:1px solid var(--border);
+  border-radius:var(--r); background:var(--surface);
+  font-family:'Inter',system-ui,sans-serif; font-size:12px; font-weight:500;
+  color:var(--muted); cursor:pointer; white-space:nowrap;
+  transition:all .12s;
+}
+.find-replace-btn:hover { background:var(--bg); color:var(--text); border-color:var(--accent); }
+.find-replace-btn.primary { background:var(--accent-bg); color:var(--accent); border-color:var(--accent-lt); }
+.find-replace-btn.primary:hover { background:#dde3fd; }
+
+/* On very small screens — anchor to top-left instead */
+@media(max-width:400px) {
+  .find-bar {
+    right:auto;
+    left:6px;
+    width:calc(100vw - 12px);
+  }
+}
+
+/* Highlight marks */
+mark.find-hl { background:#fef08a; color:inherit; border-radius:2px; }
+mark.find-hl.current { background:#fb923c; color:#fff; }
+
+/* ═══════════ TOOLBAR GROUP LABELS ═══════════ */
+.tb-group { display:flex; align-items:center; gap:1px; }
+
+/* ═══════════ WORD COUNT BADGE ═══════════ */
+.sb-reading {
+  color:var(--subtle);
+  font-size:11.5px;
+}
+
 /* ═══════════ OVERLAY ═══════════ */
 .overlay{
   display:none;position:fixed;inset:0;
@@ -666,6 +876,42 @@ body{animation:fadeUp .3s ease}
 </head>
 <body>
 
+<!-- FOCUS EXIT BTN -->
+<button class="btn btn-ghost focus-exit" onclick="toggleFocus()">
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" width="13" height="13">
+    <path d="M5.5 1.5h-3v3M10.5 1.5h3v3M5.5 14.5h-3v-3M10.5 14.5h3v-3"/>
+  </svg>
+  Вийти з фокусу
+</button>
+
+<!-- FIND & REPLACE BAR -->
+<div class="find-bar" id="findBar">
+  <div class="find-bar-row">
+    <span class="find-bar-label">Пошук</span>
+    <input class="find-inp" id="findInp" placeholder="Знайти…" oninput="doFind()" onkeydown="findKey(event)">
+    <div class="find-nav">
+      <button class="find-nav-btn" onclick="findStep(-1)" title="Попереднє">
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 9L4 6l4-3"/></svg>
+      </button>
+      <button class="find-nav-btn" onclick="findStep(1)" title="Наступне">
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 9l4-3-4-3"/></svg>
+      </button>
+    </div>
+    <span class="find-count" id="findCount"></span>
+    <button class="find-close" onclick="closeFindBar()">
+      <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 2l8 8M10 2l-8 8"/></svg>
+    </button>
+  </div>
+  <div class="find-bar-row">
+    <span class="find-bar-label">Заміна</span>
+    <input class="find-inp" id="replaceInp" placeholder="Замінити на…" onkeydown="if(event.key==='Enter')replaceOne()">
+    <div class="find-replace-row">
+      <button class="find-replace-btn primary" onclick="replaceOne()">Замінити</button>
+      <button class="find-replace-btn" onclick="replaceAll()">Всі</button>
+    </div>
+  </div>
+</div>
+
 <!-- OVERLAY -->
 <div class="overlay" id="overlay">
   <div class="ov-card">
@@ -688,261 +934,278 @@ body{animation:fadeUp .3s ease}
     <span class="brand-name">TextCraft</span>
   </a>
   <div class="topbar-div"></div>
-  <input class="doc-name" id="docTitle" value="Без назви" />
+  <div class="doc-name-wrap">
+    <input class="doc-name" id="docTitle" value="Без назви" />
+  </div>
   <div class="topbar-actions">
     <!-- TOC toggle -->
-    <button class="btn btn-ghost" id="tocToggleBtn" onclick="toggleToc()" data-tip="Навігація">
+    <button class="btn btn-ghost btn-icon" id="tocToggleBtn" onclick="toggleToc()" data-tip="Навігація (зміст)">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
         <path d="M2 4h3M2 8h3M2 12h3M7 4h7M7 8h5M7 12h7"/>
       </svg>
     </button>
-    <div style="width:1px;height:20px;background:var(--border)"></div>
-    <button class="btn btn-ghost" onclick="clearDoc()">
+    <button class="btn btn-ghost btn-icon" onclick="toggleFindBar()" data-tip="Пошук і заміна (Ctrl+F)" id="findBtn">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
+        <circle cx="6.5" cy="6.5" r="4"/>
+        <path d="M9.5 9.5l4 4"/>
+      </svg>
+    </button>
+    <button class="btn btn-ghost btn-icon" onclick="toggleFocus()" data-tip="Режим фокусу">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M1.5 5.5V2.5h3M11.5 2.5h3v3M1.5 10.5v3h3M11.5 13.5h3v-3"/>
+      </svg>
+    </button>
+    <button class="btn btn-ghost btn-icon" onclick="clearDoc()" data-tip="Очистити документ">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
         <path d="M2 4h12M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1M6 7v5M10 7v5M3 4l.8 9a1 1 0 001 .9h6.4a1 1 0 001-.9L13 4"/>
       </svg>
-      Очистити
     </button>
-    <button class="btn btn-outline" onclick="exportHTML()">
+    <div class="topbar-div"></div>
+    <button class="btn btn-outline" onclick="exportHTML()" data-tip="Зберегти як HTML">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
         <path d="M4 2h8l3 3v9a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/>
         <path d="M12 2v4h3M8 7v5M6 10l2 2 2-2"/>
       </svg>
-      HTML
+      <span class="btn-label">HTML</span>
     </button>
-    <button class="btn btn-solid" onclick="exportPDF()">
+    <button class="btn btn-solid" onclick="exportPDF()" data-tip="Зберегти як PDF">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
         <path d="M4 2h8l3 3v9a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/>
         <path d="M12 2v4h3M8 7v5M6 10l2 2 2-2"/>
       </svg>
-      Зберегти PDF
+      <span class="btn-label">PDF</span>
+    </button>
+    <!-- Hamburger for small screens -->
+    <button class="topbar-menu-btn" onclick="toggleTopbarMenu()" id="topbarMenuBtn" data-tip="Меню">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M2 4h12M2 8h12M2 12h12"/>
+      </svg>
+    </button>
+  </div>
+  <!-- Dropdown menu (mobile) -->
+  <div class="topbar-dropdown" id="topbarDropdown">
+    <button class="btn btn-ghost" onclick="toggleToc();closeTopbarMenu()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" width="13" height="13"><path d="M2 4h3M2 8h3M2 12h3M7 4h7M7 8h5M7 12h7"/></svg>
+      <span class="btn-label">Навігація</span>
+    </button>
+    <button class="btn btn-ghost" onclick="toggleFindBar();closeTopbarMenu()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" width="13" height="13"><circle cx="6.5" cy="6.5" r="4"/><path d="M9.5 9.5l4 4"/></svg>
+      <span class="btn-label">Пошук</span>
+    </button>
+    <button class="btn btn-ghost" onclick="toggleFocus();closeTopbarMenu()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" width="13" height="13"><path d="M1.5 5.5V2.5h3M11.5 2.5h3v3M1.5 10.5v3h3M11.5 13.5h3v-3"/></svg>
+      <span class="btn-label">Фокус</span>
+    </button>
+    <button class="btn btn-ghost" onclick="clearDoc();closeTopbarMenu()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" width="13" height="13"><path d="M2 4h12M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1M6 7v5M10 7v5M3 4l.8 9a1 1 0 001 .9h6.4a1 1 0 001-.9L13 4"/></svg>
+      <span class="btn-label">Очистити</span>
+    </button>
+    <div class="topbar-dd-sep"></div>
+    <button class="btn btn-outline" onclick="exportHTML();closeTopbarMenu()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" width="13" height="13"><path d="M4 2h8l3 3v9a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M12 2v4h3M8 7v5M6 10l2 2 2-2"/></svg>
+      <span class="btn-label">Зберегти HTML</span>
+    </button>
+    <button class="btn btn-solid" onclick="exportPDF();closeTopbarMenu()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" width="13" height="13"><path d="M4 2h8l3 3v9a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M12 2v4h3M8 7v5M6 10l2 2 2-2"/></svg>
+      <span class="btn-label">Зберегти PDF</span>
     </button>
   </div>
 </header>
 
 <!-- TOOLBAR -->
-<div class="toolbar">
+<div class="toolbar-wrap" id="toolbarWrap">
+  <button class="tb-scroll-btn left" id="tbScrollLeft" onclick="tbScroll(-120)">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4L6 8l4 4"/></svg>
+  </button>
+  <div class="toolbar" id="toolbar">
 
-  <!-- Paragraph style -->
-  <select class="tb-select" id="blockStyle" onchange="applyBlock(this.value)" data-tip="Стиль абзацу">
-    <option value="p">Звичайний</option>
-    <option value="h1">Заголовок 1</option>
-    <option value="h2">Заголовок 2</option>
-    <option value="h3">Заголовок 3</option>
-    <option value="blockquote">Цитата</option>
-    <option value="pre">Код</option>
-  </select>
+    <!-- Paragraph style -->
+    <select class="tb-select" id="blockStyle" onchange="applyBlock(this.value)" data-tip="Стиль абзацу">
+      <option value="p">Звичайний</option>
+      <option value="h1">Заголовок 1</option>
+      <option value="h2">Заголовок 2</option>
+      <option value="h3">Заголовок 3</option>
+      <option value="blockquote">Цитата</option>
+      <option value="pre">Код</option>
+    </select>
 
-  <div class="tb-sep"></div>
+    <div class="tb-sep"></div>
 
-  <!-- Font family -->
-  <select class="tb-select" id="fontFam" onchange="applyFontFam(this.value)" data-tip="Шрифт">
-    <option value="'Lora',serif">Lora (Serif)</option>
-    <option value="'Outfit',sans-serif">Outfit (Sans)</option>
-    <option value="Georgia,serif">Georgia</option>
-    <option value="'Times New Roman',serif">Times New Roman</option>
-    <option value="'Courier New',monospace">Courier New</option>
-    <option value="Verdana,sans-serif">Verdana</option>
-    <option value="Garamond,serif">Garamond</option>
-  </select>
+    <!-- Font family -->
+    <select class="tb-select" id="fontFam" onchange="applyFontFam(this.value)" data-tip="Шрифт">
+      <option value="'Lora',serif">Lora (Serif)</option>
+      <option value="'Outfit',sans-serif">Outfit (Sans)</option>
+      <option value="Georgia,serif">Georgia</option>
+      <option value="'Times New Roman',serif">Times New Roman</option>
+      <option value="'Courier New',monospace">Courier New</option>
+      <option value="Verdana,sans-serif">Verdana</option>
+      <option value="Garamond,serif">Garamond</option>
+    </select>
 
-  <div class="tb-sep"></div>
+    <div class="tb-sep"></div>
 
-  <!-- Font size -->
-  <div class="size-ctrl">
-    <button class="size-btn" onclick="changeSize(-1)" data-tip="Менше">−</button>
-    <input class="size-inp" type="number" id="fontSize" value="16" min="6" max="144"
-           onchange="applyFontSize(parseInt(this.value)||16)" />
-    <button class="size-btn" onclick="changeSize(+1)" data-tip="Більше">+</button>
+    <!-- Font size -->
+    <div class="size-ctrl">
+      <button class="size-btn" onclick="changeSize(-1)" data-tip="Менше">−</button>
+      <input class="size-inp" type="number" id="fontSize" value="16" min="6" max="144"
+             onchange="applyFontSize(parseInt(this.value)||16)" />
+      <button class="size-btn" onclick="changeSize(+1)" data-tip="Більше">+</button>
+    </div>
+
+    <div class="tb-sep"></div>
+
+    <!-- Bold -->
+    <button class="tb" id="btn-bold" onclick="exec('bold')" data-tip="Жирний (Ctrl+B)">
+      <svg viewBox="0 0 16 16" fill="currentColor">
+        <path d="M4.5 2h4A3 3 0 0112 5a3 3 0 01-2.2 2.9A3.5 3.5 0 0113 11.5 3.5 3.5 0 019.5 15H4.5V2zm2 5h1.5a1.5 1.5 0 000-3H6.5v3zm0 5.5h2.5a1.5 1.5 0 000-3H6.5v3z"/>
+      </svg>
+    </button>
+    <!-- Italic -->
+    <button class="tb" id="btn-italic" onclick="exec('italic')" data-tip="Курсив (Ctrl+I)">
+      <svg viewBox="0 0 16 16" fill="currentColor">
+        <path d="M6 2h6v2H9.9L7.1 12H9v2H3v-2h2.1L7.9 4H6V2z"/>
+      </svg>
+    </button>
+    <!-- Underline -->
+    <button class="tb" id="btn-underline" onclick="exec('underline')" data-tip="Підкреслення (Ctrl+U)">
+      <svg viewBox="0 0 16 16" fill="currentColor">
+        <path d="M4 2v5a4 4 0 008 0V2h-2v5a2 2 0 01-4 0V2H4zM2 13.5h12V15H2v-1.5z"/>
+      </svg>
+    </button>
+    <!-- Strikethrough -->
+    <button class="tb" id="btn-strikeThrough" onclick="exec('strikeThrough')" data-tip="Закреслення">
+      <svg viewBox="0 0 16 16" fill="currentColor">
+        <path d="M1.5 8.5h13v1h-13v-1z"/>
+        <path d="M8 3.5A2.5 2.5 0 005.5 6H4A4 4 0 018 2a4 4 0 014 4h-1.5A2.5 2.5 0 008 3.5zM5.5 10A2.5 2.5 0 008 12.5 2.5 2.5 0 0010.5 10H12a4 4 0 01-4 4 4 4 0 01-4-4h1.5z"/>
+      </svg>
+    </button>
+    <!-- Superscript -->
+    <button class="tb" id="btn-superscript" onclick="exec('superscript')" data-tip="Верхній індекс">
+      <svg viewBox="0 0 16 16" fill="currentColor">
+        <path d="M1.5 13L5.3 8 1.5 3h2l2.6 3.5L8.7 3h2L7 8l3.7 5h-2L6.1 9.5 3.5 13h-2zM11.5 1.5h3.5v1H13v.6h2v1h-2v.6h2v1h-3.5v-4.2z"/>
+      </svg>
+    </button>
+    <!-- Subscript -->
+    <button class="tb" id="btn-subscript" onclick="exec('subscript')" data-tip="Нижній індекс">
+      <svg viewBox="0 0 16 16" fill="currentColor">
+        <path d="M1.5 3L5.3 8 1.5 13h2l2.6-3.5L8.7 13h2L7 8l3.7-5h-2L6.1 6.5 3.5 3h-2zM11.5 9.5H15v1h-2v.6h2v1h-2v.6h2v1h-3.5V9.5z"/>
+      </svg>
+    </button>
+
+    <div class="tb-sep"></div>
+
+    <!-- Text color -->
+    <button class="col-btn" onclick="document.getElementById('pickTxt').click()" data-tip="Колір тексту">
+      <svg viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 1L2 15h2.2l1.5-4h4.6l1.5 4H14L8 1zm-1.6 9L8 5.2l1.6 4.8H6.4z"/>
+      </svg>
+      <div class="col-bar" id="barTxt" style="background:#1c1917"></div>
+      <input type="color" id="pickTxt" value="#1c1917" oninput="applyTxtColor(this.value)">
+    </button>
+    <!-- Highlight -->
+    <button class="col-btn" onclick="document.getElementById('pickHL').click()" data-tip="Підсвічування">
+      <svg viewBox="0 0 16 16" fill="currentColor">
+        <path d="M1 14l3.5-3.5 7.5-7.5 2 2-7.5 7.5L3 15H1v-1zm11.5-11l1-1 1 1-1 1-1-1z"/>
+      </svg>
+      <div class="col-bar" id="barHL" style="background:#fde68a"></div>
+      <input type="color" id="pickHL" value="#fde68a" oninput="applyHL(this.value)">
+    </button>
+
+    <div class="tb-sep"></div>
+
+    <!-- Align -->
+    <button class="tb" onclick="exec('justifyLeft')" data-tip="По лівому краю">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12v1.4H2V3zm0 3.3h8v1.4H2V6.3zm0 3.4h12v1.4H2V9.7zm0 3.3h8v1.4H2v-1.4z"/></svg>
+    </button>
+    <button class="tb" onclick="exec('justifyCenter')" data-tip="По центру">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12v1.4H2V3zm2 3.3h8v1.4H4V6.3zm-2 3.4h12v1.4H2V9.7zm2 3.3h8v1.4H4v-1.4z"/></svg>
+    </button>
+    <button class="tb" onclick="exec('justifyRight')" data-tip="По правому краю">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12v1.4H2V3zm4 3.3h8v1.4H6V6.3zm-4 3.4h12v1.4H2V9.7zm4 3.3h8v1.4H6v-1.4z"/></svg>
+    </button>
+    <button class="tb" onclick="exec('justifyFull')" data-tip="По ширині">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12v1.4H2V3zm0 3.3h12v1.4H2V6.3zm0 3.4h12v1.4H2V9.7zm0 3.3h12v1.4H2v-1.4z"/></svg>
+    </button>
+
+    <div class="tb-sep"></div>
+
+    <!-- Lists -->
+    <button class="tb" onclick="exec('insertUnorderedList')" data-tip="Маркований список">
+      <svg viewBox="0 0 16 16" fill="currentColor">
+        <circle cx="2.5" cy="4" r="1.3"/><path d="M5.5 3.3h9v1.4h-9V3.3z"/>
+        <circle cx="2.5" cy="8" r="1.3"/><path d="M5.5 7.3h9v1.4h-9V7.3z"/>
+        <circle cx="2.5" cy="12" r="1.3"/><path d="M5.5 11.3h9v1.4h-9v-1.4z"/>
+      </svg>
+    </button>
+    <button class="tb" onclick="exec('insertOrderedList')" data-tip="Нумерований список">
+      <svg viewBox="0 0 16 16" fill="currentColor">
+        <path d="M1.5 2h1.3v4H1.5V2zm-1 3.3h3.3v1H.5v-1zM6 3.3h9v1.4H6V3.3zM6 7.3h9v1.4H6V7.3zM1 9h2.3v.5H1.8a.8.8 0 00-.8.8.8.8 0 00.8.8h1.5v.5H1v1h3.3V9H1zm5 2.3h9v1.4H6v-1.4z"/>
+      </svg>
+    </button>
+
+    <div class="tb-sep"></div>
+
+    <!-- Indent -->
+    <button class="tb" onclick="exec('indent')" data-tip="Збільшити відступ">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12v1.4H2V3zm4 3.3h8v1.4H6V6.3zm-4 3.4h12v1.4H2V9.7zm4 3.3h8v1.4H6v-1.4zM1 6l3 2-3 2V6z"/></svg>
+    </button>
+    <button class="tb" onclick="exec('outdent')" data-tip="Зменшити відступ">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12v1.4H2V3zm4 3.3h8v1.4H6V6.3zm-4 3.4h12v1.4H2V9.7zm4 3.3h8v1.4H6v-1.4zM5 6l-3 2 3 2V6z"/></svg>
+    </button>
+
+    <div class="tb-sep"></div>
+
+    <!-- Link -->
+    <button class="tb" onclick="insertLink()" data-tip="Вставити посилання">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M6.5 9.5a3.5 3.5 0 005 0l2-2a3.5 3.5 0 00-5-5L7 4"/>
+        <path d="M9.5 6.5a3.5 3.5 0 00-5 0l-2 2a3.5 3.5 0 005 5L9 12"/>
+      </svg>
+    </button>
+    <!-- HR -->
+    <button class="tb" onclick="exec('insertHorizontalRule')" data-tip="Горизонтальна лінія">
+      <svg viewBox="0 0 16 16" fill="currentColor">
+        <path d="M1 7.5h14v1H1z"/>
+        <rect x="4" y="3.5" width="1" height="9" rx=".5" opacity=".3"/>
+        <rect x="11" y="3.5" width="1" height="9" rx=".5" opacity=".3"/>
+      </svg>
+    </button>
+    <!-- Insert Image -->
+    <button class="tb" onclick="triggerImageInsert()" data-tip="Вставити зображення">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/>
+        <circle cx="5.5" cy="6" r="1.2"/>
+        <path d="M1.5 11l3.5-3.5 2.5 2.5 2-2 4 4"/>
+      </svg>
+    </button>
+    <input type="file" id="imgFileInput" accept="image/*" style="display:none" onchange="insertImageFromFile(this)">
+    <!-- Remove format -->
+    <button class="tb" onclick="exec('removeFormat')" data-tip="Очистити форматування">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M3 3l10 10"/><path d="M9 2l-4 12M6 2h7M3 14h5"/>
+      </svg>
+    </button>
+
+    <div class="tb-sep"></div>
+
+    <!-- Undo / Redo -->
+    <button class="tb" onclick="exec('undo')" data-tip="Скасувати (Ctrl+Z)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7">
+        <path d="M3 6.5h6a4 4 0 014 4 4 4 0 01-4 4H6"/>
+        <path d="M3 3.5L1 6.5l2 3"/>
+      </svg>
+    </button>
+    <button class="tb" onclick="exec('redo')" data-tip="Повторити (Ctrl+Y)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7">
+        <path d="M13 6.5H7a4 4 0 00-4 4 4 4 0 004 4h3"/>
+        <path d="M13 3.5l2 3-2 3"/>
+      </svg>
+    </button>
+
   </div>
-
-  <div class="tb-sep"></div>
-
-  <!-- Bold -->
-  <button class="tb" id="btn-bold" onclick="exec('bold')" data-tip="Жирний (Ctrl+B)">
-    <svg viewBox="0 0 16 16" fill="currentColor">
-      <path d="M4.5 2h4A3 3 0 0112 5a3 3 0 01-2.2 2.9A3.5 3.5 0 0113 11.5 3.5 3.5 0 019.5 15H4.5V2zm2 5h1.5a1.5 1.5 0 000-3H6.5v3zm0 5.5h2.5a1.5 1.5 0 000-3H6.5v3z"/>
-    </svg>
+  <button class="tb-scroll-btn right" id="tbScrollRight" onclick="tbScroll(120)">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 4l4 4-4 4"/></svg>
   </button>
-
-  <!-- Italic -->
-  <button class="tb" id="btn-italic" onclick="exec('italic')" data-tip="Курсив (Ctrl+I)">
-    <svg viewBox="0 0 16 16" fill="currentColor">
-      <path d="M6 2h6v2H9.9L7.1 12H9v2H3v-2h2.1L7.9 4H6V2z"/>
-    </svg>
-  </button>
-
-  <!-- Underline -->
-  <button class="tb" id="btn-underline" onclick="exec('underline')" data-tip="Підкреслення (Ctrl+U)">
-    <svg viewBox="0 0 16 16" fill="currentColor">
-      <path d="M4 2v5a4 4 0 008 0V2h-2v5a2 2 0 01-4 0V2H4zM2 13.5h12V15H2v-1.5z"/>
-    </svg>
-  </button>
-
-  <!-- Strikethrough -->
-  <button class="tb" id="btn-strikeThrough" onclick="exec('strikeThrough')" data-tip="Закреслення">
-    <svg viewBox="0 0 16 16" fill="currentColor">
-      <path d="M1.5 8.5h13v1h-13v-1z"/>
-      <path d="M8 3.5A2.5 2.5 0 005.5 6H4A4 4 0 018 2a4 4 0 014 4h-1.5A2.5 2.5 0 008 3.5zM5.5 10A2.5 2.5 0 008 12.5 2.5 2.5 0 0010.5 10H12a4 4 0 01-4 4 4 4 0 01-4-4h1.5z"/>
-    </svg>
-  </button>
-
-  <!-- Superscript -->
-  <button class="tb" id="btn-superscript" onclick="exec('superscript')" data-tip="Верхній індекс">
-    <svg viewBox="0 0 16 16" fill="currentColor">
-      <path d="M1.5 13L5.3 8 1.5 3h2l2.6 3.5L8.7 3h2L7 8l3.7 5h-2L6.1 9.5 3.5 13h-2zM11.5 1.5h3.5v1H13v.6h2v1h-2v.6h2v1h-3.5v-4.2z"/>
-    </svg>
-  </button>
-
-  <!-- Subscript -->
-  <button class="tb" id="btn-subscript" onclick="exec('subscript')" data-tip="Нижній індекс">
-    <svg viewBox="0 0 16 16" fill="currentColor">
-      <path d="M1.5 3L5.3 8 1.5 13h2l2.6-3.5L8.7 13h2L7 8l3.7-5h-2L6.1 6.5 3.5 3h-2zM11.5 9.5H15v1h-2v.6h2v1h-2v.6h2v1h-3.5V9.5z"/>
-    </svg>
-  </button>
-
-  <div class="tb-sep"></div>
-
-  <!-- Text color -->
-  <button class="col-btn" onclick="document.getElementById('pickTxt').click()" data-tip="Колір тексту">
-    <svg viewBox="0 0 16 16" fill="currentColor">
-      <path d="M8 1L2 15h2.2l1.5-4h4.6l1.5 4H14L8 1zm-1.6 9L8 5.2l1.6 4.8H6.4z"/>
-    </svg>
-    <div class="col-bar" id="barTxt" style="background:#1c1917"></div>
-    <input type="color" id="pickTxt" value="#1c1917" oninput="applyTxtColor(this.value)">
-  </button>
-
-  <!-- Highlight -->
-  <button class="col-btn" onclick="document.getElementById('pickHL').click()" data-tip="Виділення">
-    <svg viewBox="0 0 16 16" fill="currentColor">
-      <path d="M1 14l3.5-3.5 7.5-7.5 2 2-7.5 7.5L3 15H1v-1zm11.5-11l1-1 1 1-1 1-1-1z"/>
-    </svg>
-    <div class="col-bar" id="barHL" style="background:#fde68a"></div>
-    <input type="color" id="pickHL" value="#fde68a" oninput="applyHL(this.value)">
-  </button>
-
-  <div class="tb-sep"></div>
-
-  <!-- Align left -->
-  <button class="tb" onclick="exec('justifyLeft')" data-tip="По лівому краю">
-    <svg viewBox="0 0 16 16" fill="currentColor">
-      <path d="M2 3h12v1.4H2V3zm0 3.3h8v1.4H2V6.3zm0 3.4h12v1.4H2V9.7zm0 3.3h8v1.4H2v-1.4z"/>
-    </svg>
-  </button>
-  <!-- Align center -->
-  <button class="tb" onclick="exec('justifyCenter')" data-tip="По центру">
-    <svg viewBox="0 0 16 16" fill="currentColor">
-      <path d="M2 3h12v1.4H2V3zm2 3.3h8v1.4H4V6.3zm-2 3.4h12v1.4H2V9.7zm2 3.3h8v1.4H4v-1.4z"/>
-    </svg>
-  </button>
-  <!-- Align right -->
-  <button class="tb" onclick="exec('justifyRight')" data-tip="По правому краю">
-    <svg viewBox="0 0 16 16" fill="currentColor">
-      <path d="M2 3h12v1.4H2V3zm4 3.3h8v1.4H6V6.3zm-4 3.4h12v1.4H2V9.7zm4 3.3h8v1.4H6v-1.4z"/>
-    </svg>
-  </button>
-  <!-- Justify -->
-  <button class="tb" onclick="exec('justifyFull')" data-tip="По ширині">
-    <svg viewBox="0 0 16 16" fill="currentColor">
-      <path d="M2 3h12v1.4H2V3zm0 3.3h12v1.4H2V6.3zm0 3.4h12v1.4H2V9.7zm0 3.3h12v1.4H2v-1.4z"/>
-    </svg>
-  </button>
-
-  <div class="tb-sep"></div>
-
-  <!-- UL -->
-  <button class="tb" onclick="exec('insertUnorderedList')" data-tip="Маркований список">
-    <svg viewBox="0 0 16 16" fill="currentColor">
-      <circle cx="2.5" cy="4" r="1.3"/>
-      <path d="M5.5 3.3h9v1.4h-9V3.3z"/>
-      <circle cx="2.5" cy="8" r="1.3"/>
-      <path d="M5.5 7.3h9v1.4h-9V7.3z"/>
-      <circle cx="2.5" cy="12" r="1.3"/>
-      <path d="M5.5 11.3h9v1.4h-9v-1.4z"/>
-    </svg>
-  </button>
-
-  <!-- OL -->
-  <button class="tb" onclick="exec('insertOrderedList')" data-tip="Нумерований список">
-    <svg viewBox="0 0 16 16" fill="currentColor">
-      <path d="M1.5 2h1.3v4H1.5V2zm-1 3.3h3.3v1H.5v-1zM6 3.3h9v1.4H6V3.3zM6 7.3h9v1.4H6V7.3zM1 9h2.3v.5H1.8a.8.8 0 00-.8.8.8.8 0 00.8.8h1.5v.5H1v1h3.3V9H1zm5 2.3h9v1.4H6v-1.4z"/>
-    </svg>
-  </button>
-
-  <div class="tb-sep"></div>
-
-  <!-- Indent / Outdent -->
-  <button class="tb" onclick="exec('indent')" data-tip="Збільшити відступ">
-    <svg viewBox="0 0 16 16" fill="currentColor">
-      <path d="M2 3h12v1.4H2V3zm4 3.3h8v1.4H6V6.3zm-4 3.4h12v1.4H2V9.7zm4 3.3h8v1.4H6v-1.4zM1 6l3 2-3 2V6z"/>
-    </svg>
-  </button>
-  <button class="tb" onclick="exec('outdent')" data-tip="Зменшити відступ">
-    <svg viewBox="0 0 16 16" fill="currentColor">
-      <path d="M2 3h12v1.4H2V3zm4 3.3h8v1.4H6V6.3zm-4 3.4h12v1.4H2V9.7zm4 3.3h8v1.4H6v-1.4zM5 6l-3 2 3 2V6z"/>
-    </svg>
-  </button>
-
-  <div class="tb-sep"></div>
-
-  <!-- Link -->
-  <button class="tb" onclick="insertLink()" data-tip="Вставити посилання">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
-      <path d="M6.5 9.5a3.5 3.5 0 005 0l2-2a3.5 3.5 0 00-5-5L7 4"/>
-      <path d="M9.5 6.5a3.5 3.5 0 00-5 0l-2 2a3.5 3.5 0 005 5L9 12"/>
-    </svg>
-  </button>
-
-  <!-- HR -->
-  <button class="tb" onclick="exec('insertHorizontalRule')" data-tip="Горизонтальна лінія">
-    <svg viewBox="0 0 16 16" fill="currentColor">
-      <path d="M1 7.5h14v1H1z"/>
-      <rect x="4" y="3.5" width="1" height="9" rx=".5" opacity=".3"/>
-      <rect x="11" y="3.5" width="1" height="9" rx=".5" opacity=".3"/>
-    </svg>
-  </button>
-
-  <!-- Insert Image -->
-  <button class="tb" onclick="triggerImageInsert()" data-tip="Вставити зображення">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-      <rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/>
-      <circle cx="5.5" cy="6" r="1.2"/>
-      <path d="M1.5 11l3.5-3.5 2.5 2.5 2-2 4 4"/>
-    </svg>
-  </button>
-  <input type="file" id="imgFileInput" accept="image/*" style="display:none" onchange="insertImageFromFile(this)">
-
-  <!-- Remove format -->
-  <button class="tb" onclick="exec('removeFormat')" data-tip="Очистити форматування">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
-      <path d="M3 3l10 10"/>
-      <path d="M9 2l-4 12M6 2h7M3 14h5"/>
-    </svg>
-  </button>
-
-  <div class="tb-sep"></div>
-
-  <!-- Undo / Redo -->
-  <button class="tb" onclick="exec('undo')" data-tip="Скасувати (Ctrl+Z)">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7">
-      <path d="M3 6.5h6a4 4 0 014 4 4 4 0 01-4 4H6"/>
-      <path d="M3 3.5L1 6.5l2 3"/>
-    </svg>
-  </button>
-  <button class="tb" onclick="exec('redo')" data-tip="Повторити (Ctrl+Y)">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7">
-      <path d="M13 6.5H7a4 4 0 00-4 4 4 4 0 004 4h3"/>
-      <path d="M13 3.5l2 3-2 3"/>
-    </svg>
-  </button>
-
-  <!-- More/less toggle (shown when toolbar wraps) -->
-  <button class="tb-more" id="tbMoreBtn" onclick="toggleToolbar()" data-tip="Більше">
-    <svg id="tbMoreIcon" viewBox="0 0 16 16" fill="currentColor">
-      <circle cx="4" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="12" cy="8" r="1.3"/>
-    </svg>
-  </button>
-
 </div>
 
 <!-- MAIN LAYOUT -->
@@ -980,6 +1243,7 @@ body{animation:fadeUp .3s ease}
   <span><span class="sb-dot"></span>Збережено</span>
   <span id="sb-w">Слів: 0</span>
   <span id="sb-c">Символів: 0</span>
+  <span id="sb-read" class="sb-reading">Час читання: &lt;1 хв</span>
   <span class="sb-right" id="sb-p">Стор. ~1</span>
 </footer>
 
@@ -1337,29 +1601,40 @@ function attachAllImgListeners() {
   });
 }
 
-/* ══ RESPONSIVE TOOLBAR ══ */
-const toolbar = document.querySelector('.toolbar');
-let tbExpanded = false;
+/* ══ TOOLBAR SCROLL ══ */
+const tbEl = document.getElementById('toolbar');
+const tbWrap = document.getElementById('toolbarWrap');
 
-function checkToolbarOverflow() {
-  const overflows = toolbar.scrollHeight > 50;
-  toolbar.classList.toggle('toolbar-overflow', overflows || tbExpanded);
+function updateTbScrollBtns() {
+  if (!tbEl) return;
+  const atLeft  = tbEl.scrollLeft <= 2;
+  const atRight = tbEl.scrollLeft >= tbEl.scrollWidth - tbEl.clientWidth - 2;
+  const canScroll = tbEl.scrollWidth > tbEl.clientWidth + 4;
+  tbWrap.classList.toggle('can-scroll-left',  canScroll && !atLeft);
+  tbWrap.classList.toggle('can-scroll-right', canScroll && !atRight);
 }
 
-function toggleToolbar() {
-  tbExpanded = !tbExpanded;
-  toolbar.classList.toggle('expanded', tbExpanded);
-  const icon = document.getElementById('tbMoreIcon');
-  if (tbExpanded) {
-    icon.innerHTML = '<path d="M3 5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.6"/>';
-  } else {
-    icon.innerHTML = '<circle cx="4" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="12" cy="8" r="1.3"/>';
+function tbScroll(dx) {
+  tbEl.scrollBy({ left: dx, behavior: 'smooth' });
+}
+
+tbEl.addEventListener('scroll', updateTbScrollBtns, { passive: true });
+new ResizeObserver(updateTbScrollBtns).observe(tbEl);
+setTimeout(updateTbScrollBtns, 100);
+
+/* ══ TOPBAR DROPDOWN MENU ══ */
+function toggleTopbarMenu() {
+  const dd = document.getElementById('topbarDropdown');
+  dd.classList.toggle('open');
+}
+function closeTopbarMenu() {
+  document.getElementById('topbarDropdown').classList.remove('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#topbarMenuBtn') && !e.target.closest('#topbarDropdown')) {
+    closeTopbarMenu();
   }
-}
-
-const toolbarRO = new ResizeObserver(checkToolbarOverflow);
-toolbarRO.observe(toolbar);
-setTimeout(checkToolbarOverflow, 100);
+});
 
 /* ══ TOC ══ */
 let tocVisible = true;
@@ -1450,6 +1725,7 @@ function tick() {
   document.getElementById('sb-w').textContent = 'Слів: ' + w;
   document.getElementById('sb-c').textContent = 'Символів: ' + c;
   document.getElementById('sb-p').textContent = 'Стор. ~' + Math.max(1, Math.ceil(w / 500));
+  updateReading(w);
   scheduleSave();
   scheduleToc();
 }
@@ -1485,6 +1761,10 @@ function loadSaved() {
 /* ══ CLEAR ══ */
 function clearDoc() {
   if (!confirm('Очистити весь документ?')) return;
+  editorSnapshot = '';
+  findResults = []; findIdx = 0;
+  document.getElementById('findBar').classList.remove('open');
+  document.getElementById('findCount').textContent = '';
   editor.innerHTML = '';
   try {
     localStorage.removeItem(STORE_KEY);
@@ -1812,8 +2092,184 @@ function dl(name, content, type) {
   setTimeout(() => URL.revokeObjectURL(a.href), 5000);
 }
 
+/* ══ READING TIME ══ */
+function updateReading(words) {
+  const mins = Math.max(1, Math.round(words / 200));
+  document.getElementById('sb-read').textContent = `Час читання: ~${mins} хв`;
+}
+
+/* ══ FOCUS MODE ══ */
+function toggleFocus() {
+  document.body.classList.toggle('focus-mode');
+}
+
+/* ══ FIND & REPLACE ══ */
+let findQuery = '', findResults = [], findIdx = 0;
+let editorSnapshot = '';   // innerHTML snapshot taken before marking
+let isMarking = false;     // guard against re-entrant input events
+
+function toggleFindBar() {
+  const bar = document.getElementById('findBar');
+  if (bar.classList.contains('open')) {
+    closeFindBar();
+  } else {
+    bar.classList.add('open');
+    document.getElementById('findInp').focus();
+  }
+}
+
+function closeFindBar() {
+  document.getElementById('findBar').classList.remove('open');
+  document.getElementById('findInp').value = '';
+  document.getElementById('replaceInp').value = '';
+  document.getElementById('findCount').textContent = '';
+  restoreSnapshot();
+  findResults = []; findIdx = 0; findQuery = '';
+}
+
+/* Save a clean copy of the editor HTML (without marks) */
+function takeSnapshot() {
+  editorSnapshot = editor.innerHTML;
+}
+
+/* Re-inject snapshot (removes marks) and restore text cursor roughly */
+function restoreSnapshot() {
+  if (!editorSnapshot) return;
+  isMarking = true;
+  editor.innerHTML = editorSnapshot;
+  editorSnapshot = '';
+  isMarking = false;
+}
+
+/* Escape regex special chars */
+function escRe(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/* Build marked HTML from snapshot + current query */
+function buildMarkedHTML(html, q) {
+  if (!q) return html;
+  const re = new RegExp('(' + escRe(q) + ')', 'gi');
+  // Only replace inside text nodes, NOT inside tag attributes
+  // Strategy: split on tags, mark only text segments
+  return html.replace(/(<[^>]*>)|([^<]+)/g, (match, tag, text) => {
+    if (tag) return tag; // preserve tags untouched
+    return text.replace(re, '<mark class="find-hl">$1</mark>');
+  });
+}
+
+function doFind() {
+  const q = document.getElementById('findInp').value;
+  findQuery = q;
+  findResults = []; findIdx = 0;
+
+  // Take fresh snapshot before any marking
+  if (!editorSnapshot) takeSnapshot();
+
+  // Reset to clean HTML first
+  isMarking = true;
+  editor.innerHTML = editorSnapshot;
+  isMarking = false;
+
+  if (!q) {
+    document.getElementById('findCount').textContent = '';
+    editorSnapshot = '';
+    return;
+  }
+
+  // Inject marks into innerHTML
+  const marked = buildMarkedHTML(editorSnapshot, q);
+  isMarking = true;
+  editor.innerHTML = marked;
+  isMarking = false;
+
+  // Collect live mark elements
+  findResults = Array.from(editor.querySelectorAll('mark.find-hl'));
+
+  const cnt = document.getElementById('findCount');
+  if (findResults.length) {
+    findIdx = 0;
+    highlightCurrent();
+  } else {
+    cnt.textContent = 'Не знайдено';
+  }
+}
+
+function highlightCurrent() {
+  findResults.forEach((m, i) => m.classList.toggle('current', i === findIdx));
+  const cur = findResults[findIdx];
+  if (cur) {
+    cur.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    document.getElementById('findCount').textContent = `${findIdx + 1} / ${findResults.length}`;
+  }
+}
+
+function findStep(dir) {
+  if (!findResults.length) return;
+  findIdx = (findIdx + dir + findResults.length) % findResults.length;
+  highlightCurrent();
+}
+
+function findKey(e) {
+  if (e.key === 'Enter') { e.shiftKey ? findStep(-1) : findStep(1); }
+  if (e.key === 'Escape') closeFindBar();
+}
+
+function replaceOne() {
+  const q = document.getElementById('findInp').value;
+  const rep = document.getElementById('replaceInp').value;
+  if (!q || !editorSnapshot) return;
+
+  // Replace first occurrence in snapshot text (case-insensitive)
+  const re = new RegExp(escRe(q), 'i');
+  const newSnap = editorSnapshot.replace(/(<[^>]*>)|([^<]+)/g, (match, tag, text) => {
+    if (tag) return tag;
+    if (re.test(text)) {
+      // replace only the first match in this text segment
+      return text.replace(re, rep);
+    }
+    return text;
+  });
+
+  if (newSnap === editorSnapshot) {
+    document.getElementById('findCount').textContent = 'Не знайдено';
+    return;
+  }
+
+  editorSnapshot = newSnap;
+  tick();
+  // Re-run find to refresh marks
+  doFind();
+}
+
+function replaceAll() {
+  const q = document.getElementById('findInp').value;
+  const rep = document.getElementById('replaceInp').value;
+  if (!q || !editorSnapshot) return;
+
+  const re = new RegExp(escRe(q), 'gi');
+  const newSnap = editorSnapshot.replace(/(<[^>]*>)|([^<]+)/g, (match, tag, text) => {
+    if (tag) return tag;
+    return text.replace(re, rep);
+  });
+
+  const count = (editorSnapshot.match(/(<[^>]*>)|([^<]+)/g) || [])
+    .filter(s => !s.startsWith('<'))
+    .reduce((acc, t) => acc + (t.match(re) || []).length, 0);
+
+  editorSnapshot = newSnap;
+  // Clear marks and show final result
+  isMarking = true;
+  editor.innerHTML = editorSnapshot;
+  isMarking = false;
+  editorSnapshot = '';
+  findResults = []; findIdx = 0;
+  document.getElementById('findCount').textContent = count > 0 ? `Замінено: ${count}` : 'Не знайдено';
+  tick();
+}
+
 /* ══ EVENTS ══ */
-editor.addEventListener('input', tick);
+editor.addEventListener('input', () => { if (!isMarking) { editorSnapshot = ''; tick(); } });
 editor.addEventListener('mouseup', syncState);
 editor.addEventListener('keyup', syncState);
 editor.addEventListener('keydown', e => {
@@ -1822,6 +2278,7 @@ editor.addEventListener('keydown', e => {
   if (k === 'b') { e.preventDefault(); exec('bold'); }
   if (k === 'i') { e.preventDefault(); exec('italic'); }
   if (k === 'u') { e.preventDefault(); exec('underline'); }
+  if (k === 'f') { e.preventDefault(); toggleFindBar(); }
   if (k === 'z' || k === 'y') setTimeout(syncState, 60);
 });
 
@@ -1876,6 +2333,18 @@ document.getElementById('scrollArea').addEventListener('click', e => {
 });
 
 document.getElementById('docTitle').addEventListener('input', scheduleSave);
+
+/* ══ GLOBAL HOTKEYS ══ */
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+    e.preventDefault();
+    toggleFindBar();
+  }
+  if (e.key === 'Escape') {
+    if (document.getElementById('findBar').classList.contains('open')) closeFindBar();
+    if (document.body.classList.contains('focus-mode')) toggleFocus();
+  }
+});
 
 /* ══ INIT ══ */
 loadSaved();
