@@ -2058,110 +2058,60 @@ function closeTocMobile() {
 }
 
 /* ══ EXPORT PDF ══ */
-async function exportPDF() {
-  const ov = document.getElementById('overlay');
-  ov.classList.add('show');
-  try {
-    if (!window.html2pdf) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js');
-    const name = document.getElementById('docTitle').value || 'document';
+function exportPDF() {
+  const name = document.getElementById('docTitle').value || 'document';
 
-    // Clean clone: unwrap img-wraps, remove UI artifacts
-    const clone = editor.cloneNode(true);
-    clone.querySelectorAll('.img-wrap').forEach(imgWrap => {
-      const img = imgWrap.querySelector('img');
-      if (img) {
-        ['img-left','img-center','img-right'].forEach(c => { if (imgWrap.classList.contains(c)) img.classList.add(c); });
-        imgWrap.replaceWith(img);
-      }
-    });
-    clone.querySelectorAll('.img-handle,.img-toolbar,.img-size-tip,.find-hl').forEach(el => el.remove());
-    clone.querySelectorAll('[class]').forEach(el => {
-      el.classList.remove('selected','img-selected');
-    });
+  // Clean clone
+  const clone = editor.cloneNode(true);
+  clone.querySelectorAll('.img-wrap').forEach(imgWrap => {
+    const img = imgWrap.querySelector('img');
+    if (img) {
+      ['img-left','img-center','img-right'].forEach(c => { if (imgWrap.classList.contains(c)) img.classList.add(c); });
+      imgWrap.replaceWith(img);
+    }
+  });
+  clone.querySelectorAll('.img-handle,.img-toolbar,.img-size-tip,.find-hl').forEach(el => el.remove());
 
-    // A4 content width: 210mm - 40mm margins = 170mm ≈ 642px at 96dpi
-    const PX_WIDTH = 642;
+  const printWin = window.open('', '_blank', 'width=900,height=700');
+  if (!printWin) { alert('Дозвольте спливаючі вікна для цього сайту і спробуйте ще раз.'); return; }
 
-    const wrap = document.createElement('div');
-    wrap.style.cssText = [
-      'position:fixed',
-      'top:0',
-      'left:0',
-      `width:${PX_WIDTH}px`,
-      'padding:0',
-      'background:#fff',
-      'font-family:Georgia,serif',
-      'font-size:13px',
-      'line-height:1.8',
-      'color:#1c1917',
-      'word-break:break-word',
-      'box-sizing:border-box',
-      'z-index:99999'
-    ].join(';');
-
-    // Inline heading/paragraph styles so html2pdf renders them correctly
-    const styleEl = document.createElement('style');
-    styleEl.textContent = `
-      h1{font-family:Georgia,serif;font-size:28px;font-weight:700;line-height:1.2;margin:8px 0 12px;color:#0f172a}
-      h2{font-family:Georgia,serif;font-size:20px;font-weight:600;line-height:1.3;margin:20px 0 8px}
-      h3{font-family:Georgia,serif;font-size:16px;font-weight:600;line-height:1.4;margin:14px 0 6px}
-      p{margin-bottom:8px}
-      ul,ol{padding-left:1.6em;margin-bottom:10px}
-      li{margin-bottom:4px}
-      blockquote{border-left:3px solid #4F6BF4;padding:8px 18px;margin:12px 0;color:#4b5563;font-style:italic;background:#eef0fe;border-radius:0 6px 6px 0}
-      a{color:#4F6BF4}
-      code{background:#f0f2f5;border-radius:4px;padding:2px 5px;font-family:Courier New,monospace;font-size:.9em}
-      pre{background:#f0f2f5;border-radius:6px;padding:12px 16px;margin:10px 0;font-family:Courier New,monospace;font-size:.88em;white-space:pre-wrap;border:1px solid #e2e5ea}
-      hr{border:none;border-top:1.5px solid #e2e5ea;margin:18px 0}
-      img{max-width:100%;height:auto;border-radius:4px;display:block;margin:8px auto}
-      img.img-left{float:left;margin:4px 16px 8px 0;display:inline}
-      img.img-right{float:right;margin:4px 0 8px 16px;display:inline}
-      img.img-center{display:block;margin:8px auto}
-    `;
-    // append style first, then content
-    wrap.appendChild(styleEl);
-    wrap.appendChild(clone);
-
-    document.body.appendChild(wrap);
-    await new Promise(r => setTimeout(r, 200));
-
-    await html2pdf().set({
-      margin: [15, 20, 15, 20],
-      filename: name + '.pdf',
-      image: { type: 'jpeg', quality: 0.97 },
-      html2canvas: {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        scrollX: 0,
-        scrollY: 0,
-        width: PX_WIDTH,
-      },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: 'css' },
-    }).from(wrap).save();
-
-    wrap.remove();
-
-    await html2pdf().set({
-      margin: [15, 20, 15, 20],
-      filename: name + '.pdf',
-      image: { type: 'jpeg', quality: 0.97 },
-      html2canvas: {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        scrollX: 0,
-        scrollY: 0,
-        width: PX_WIDTH,
-      },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: 'css' },
-    }).from(wrap).save();
-
-    wrap.remove();
-  } catch(err) { alert('Помилка PDF: ' + err.message); }
-  ov.classList.remove('show');
+  printWin.document.write(`<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>${name.replace(/</g,'&lt;')}</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 13pt;
+    line-height: 1.8;
+    color: #1c1917;
+    background: #fff;
+  }
+  h1 { font-size: 22pt; font-weight: 700; line-height: 1.2; margin: 6pt 0 14pt; color: #0f172a; }
+  h2 { font-size: 15pt; font-weight: 600; line-height: 1.3; margin: 18pt 0 8pt; }
+  h3 { font-size: 12pt; font-weight: 600; line-height: 1.4; margin: 12pt 0 6pt; }
+  p  { margin-bottom: 7pt; }
+  ul, ol { padding-left: 1.5em; margin-bottom: 8pt; }
+  li { margin-bottom: 3pt; }
+  blockquote { border-left: 3pt solid #4F6BF4; padding: 6pt 14pt; margin: 10pt 0; color: #4b5563; font-style: italic; background: #eef0fe; }
+  a  { color: #4F6BF4; }
+  code { background: #f0f2f5; padding: 1pt 4pt; font-family: 'Courier New', monospace; font-size: .88em; }
+  pre  { background: #f0f2f5; padding: 10pt 14pt; margin: 8pt 0; font-family: 'Courier New', monospace; font-size: .85em; white-space: pre-wrap; border: 1pt solid #e2e5ea; }
+  hr   { border: none; border-top: 1pt solid #e2e5ea; margin: 14pt 0; }
+  img  { max-width: 100%; height: auto; display: block; margin: 8pt auto; }
+  img.img-left  { float: left;  margin: 4pt 14pt 8pt 0; }
+  img.img-right { float: right; margin: 4pt 0 8pt 14pt; }
+  img.img-center { display: block; margin: 8pt auto; }
+  @page { margin: 20mm; size: A4; }
+</style>
+</head>
+<body>${clone.innerHTML}</body>
+</html>`);
+  printWin.document.close();
+  printWin.onload = () => { setTimeout(() => { printWin.focus(); printWin.print(); }, 600); };
 }
 
 function loadScript(src) {
