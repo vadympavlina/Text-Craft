@@ -2084,9 +2084,9 @@ async function exportPDF() {
 
     const wrap = document.createElement('div');
     wrap.style.cssText = [
-      'position:absolute',
-      'left:-9999px',
+      'position:fixed',
       'top:0',
+      'left:0',
       `width:${PX_WIDTH}px`,
       'padding:0',
       'background:#fff',
@@ -2095,7 +2095,10 @@ async function exportPDF() {
       'line-height:1.8',
       'color:#1c1917',
       'word-break:break-word',
-      'box-sizing:border-box'
+      'box-sizing:border-box',
+      'opacity:0',
+      'pointer-events:none',
+      'z-index:-1'
     ].join(';');
 
     // Inline heading/paragraph styles so html2pdf renders them correctly
@@ -2139,7 +2142,6 @@ async function exportPDF() {
         scrollX: 0,
         scrollY: 0,
         width: PX_WIDTH,
-        windowWidth: PX_WIDTH,
       },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
       pagebreak: { mode: 'css' },
