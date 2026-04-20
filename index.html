@@ -2067,11 +2067,11 @@ async function exportPDF() {
 
     // Clean clone: unwrap img-wraps, remove UI artifacts
     const clone = editor.cloneNode(true);
-    clone.querySelectorAll('.img-wrap').forEach(wrap => {
-      const img = wrap.querySelector('img');
+    clone.querySelectorAll('.img-wrap').forEach(imgWrap => {
+      const img = imgWrap.querySelector('img');
       if (img) {
-        ['img-left','img-center','img-right'].forEach(c => { if (wrap.classList.contains(c)) img.classList.add(c); });
-        wrap.replaceWith(img);
+        ['img-left','img-center','img-right'].forEach(c => { if (imgWrap.classList.contains(c)) img.classList.add(c); });
+        imgWrap.replaceWith(img);
       }
     });
     clone.querySelectorAll('.img-handle,.img-toolbar,.img-size-tip,.find-hl').forEach(el => el.remove());
@@ -2096,9 +2096,7 @@ async function exportPDF() {
       'color:#1c1917',
       'word-break:break-word',
       'box-sizing:border-box',
-      'opacity:0',
-      'pointer-events:none',
-      'z-index:-1'
+      'z-index:99999'
     ].join(';');
 
     // Inline heading/paragraph styles so html2pdf renders them correctly
@@ -2120,34 +2118,30 @@ async function exportPDF() {
       img.img-right{float:right;margin:4px 0 8px 16px;display:inline}
       img.img-center{display:block;margin:8px auto}
     `;
+    // append style first, then content
     wrap.appendChild(styleEl);
     wrap.appendChild(clone);
 
     document.body.appendChild(wrap);
-    // Wait for layout to settle
-    await new Promise(r => setTimeout(r, 150));
+    await new Promise(r => setTimeout(r, 200));
 
-    console.log('PDF wrap HTML preview:', wrap.innerHTML.slice(0, 300));
-    console.log('PDF wrap size:', wrap.offsetWidth, wrap.offsetHeight);
-    console.log('PDF clone children:', clone.children.length);
-
-    // Debug: test html2canvas directly
-    if (!window.html2canvas) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
-    const testCanvas = await html2canvas(wrap, { scale:1, logging:true, useCORS:true });
-    console.log('Canvas size:', testCanvas.width, testCanvas.height);
-    // Check if canvas has any non-white pixels
-    const ctx = testCanvas.getContext('2d');
-    const px = ctx.getImageData(0, 0, Math.min(100, testCanvas.width), Math.min(100, testCanvas.height)).data;
-    let nonWhite = 0;
-    for (let i = 0; i < px.length; i += 4) {
-      if (px[i] < 250 || px[i+1] < 250 || px[i+2] < 250) nonWhite++;
-    }
-    console.log('Non-white pixels in first 100x100:', nonWhite);
-    document.body.appendChild(testCanvas); // temporarily show canvas on page for visual check
-    setTimeout(() => testCanvas.remove(), 5000);
+    await html2pdf().set({
+      margin: [15, 20, 15, 20],
+      filename: name + '.pdf',
+      image: { type: 'jpeg', quality: 0.97 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+        width: PX_WIDTH,
+      },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: 'css' },
+    }).from(wrap).save();
 
     wrap.remove();
-    return; // stop here for now
 
     await html2pdf().set({
       margin: [15, 20, 15, 20],
