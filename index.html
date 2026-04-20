@@ -2079,9 +2079,15 @@ async function exportPDF() {
       el.classList.remove('selected','img-selected');
     });
 
+    // A4 content width: 210mm - 40mm margins = 170mm ≈ 642px at 96dpi
+    const PX_WIDTH = 642;
+
     const wrap = document.createElement('div');
     wrap.style.cssText = [
-      'width:170mm',
+      'position:absolute',
+      'left:-9999px',
+      'top:0',
+      `width:${PX_WIDTH}px`,
       'padding:0',
       'background:#fff',
       'font-family:Georgia,serif',
@@ -2115,7 +2121,8 @@ async function exportPDF() {
     wrap.appendChild(clone);
 
     document.body.appendChild(wrap);
-    await new Promise(r => setTimeout(r, 200));
+    // Wait for layout to settle
+    await new Promise(r => setTimeout(r, 150));
 
     await html2pdf().set({
       margin: [15, 20, 15, 20],
@@ -2127,9 +2134,11 @@ async function exportPDF() {
         logging: false,
         scrollX: 0,
         scrollY: 0,
+        width: PX_WIDTH,
+        windowWidth: PX_WIDTH,
       },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: ['avoid-all', 'css'] },
+      pagebreak: { mode: 'css' },
     }).from(wrap).save();
 
     wrap.remove();
