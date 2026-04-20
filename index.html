@@ -1979,16 +1979,48 @@ function exportHTML() {
     .content { padding: 32px 20px 56px; }
     .content::before { border-radius: 8px 8px 0 0; }
   }
-  @media (min-width: 801px) {
-    .toc-sidebar { transform: none !important; }
+
+  /* Desktop TOC hidden state */
+  .toc-sidebar.toc-hidden { transform: translateX(-100%); }
+  .content-wrap.toc-hidden { margin-left: 0; }
+
+  /* Floating open button (desktop, shown when TOC hidden) */
+  .toc-open-fab {
+    display: none;
+    position: fixed;
+    top: 20px; left: 0;
+    z-index: 300;
+    background: #fff;
+    border: 1px solid #e2e5ea;
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+    padding: 10px 10px 10px 8px;
+    cursor: pointer;
+    box-shadow: 2px 2px 8px rgba(0,0,0,.1);
+    color: #4b5563;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 12px; font-weight: 500;
+    align-items: center; gap: 6px;
+    transition: background .12s, color .12s;
   }
+  .toc-open-fab:hover { background: #eef0fe; color: #4F6BF4; }
+  .toc-open-fab.visible { display: flex; }
+  .toc-open-fab svg { width: 14px; height: 14px; flex-shrink: 0; }
 </style>
 </head>
 <body>
 
 ${hasToc ? `
 <!-- TOC click-outside overlay (mobile) -->
-<div class="toc-overlay" id="tocOverlay" onclick="closeTocMobile()"></div>
+<div class="toc-overlay" id="tocOverlay" onclick="closeToc()"></div>
+
+<!-- Floating open button (desktop) -->
+<button class="toc-open-fab" id="tocOpenFab" onclick="openToc()">
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7">
+    <path d="M2 4h3M2 8h3M2 12h3M7 4h7M7 8h5M7 12h7"/>
+  </svg>
+  Зміст
+</button>
 
 <!-- TOC sidebar -->
 <aside class="toc-sidebar" id="tocSidebar">
@@ -1997,7 +2029,7 @@ ${hasToc ? `
       <span class="toc-header-label">Зміст</span>
       <span class="toc-header-title">${esc(name)}</span>
     </div>
-    <button class="toc-close" onclick="closeTocMobile()" title="Закрити">✕</button>
+    <button class="toc-close" onclick="closeToc()" title="Закрити">✕</button>
   </div>
   <nav class="toc-nav">
     ${tocItems}
@@ -2006,7 +2038,7 @@ ${hasToc ? `
 
 <!-- Mobile top bar -->
 <div class="mobile-bar">
-  <button class="mobile-bar-btn" onclick="openTocMobile()">
+  <button class="mobile-bar-btn" onclick="openToc()">
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7">
       <path d="M2 4h3M2 8h3M2 12h3M7 4h7M7 8h5M7 12h7"/>
     </svg>
@@ -2016,22 +2048,41 @@ ${hasToc ? `
 </div>
 ` : ''}
 
-<div class="content-wrap">
+<div class="content-wrap" id="contentWrap">
   <main class="content">
     ${bodyHTML}
   </main>
 </div>
 
 <script>
-function openTocMobile() {
-  document.getElementById('tocSidebar').classList.add('open');
-  document.getElementById('tocOverlay').classList.add('show');
-}
-function closeTocMobile() {
+function openToc() {
   var s = document.getElementById('tocSidebar');
   var o = document.getElementById('tocOverlay');
-  if (s) s.classList.remove('open');
-  if (o) o.classList.remove('show');
+  var w = document.getElementById('contentWrap');
+  var f = document.getElementById('tocOpenFab');
+  if (s) s.classList.remove('toc-hidden', 'open') || s.classList.add('open');
+  if (window.innerWidth > 800) {
+    if (s) s.classList.remove('toc-hidden');
+    if (w) w.classList.remove('toc-hidden');
+  } else {
+    if (s) s.classList.add('open');
+    if (o) o.classList.add('show');
+  }
+  if (f) f.classList.remove('visible');
+}
+function closeToc() {
+  var s = document.getElementById('tocSidebar');
+  var o = document.getElementById('tocOverlay');
+  var w = document.getElementById('contentWrap');
+  var f = document.getElementById('tocOpenFab');
+  if (window.innerWidth > 800) {
+    if (s) s.classList.add('toc-hidden');
+    if (w) w.classList.add('toc-hidden');
+    if (f) f.classList.add('visible');
+  } else {
+    if (s) s.classList.remove('open');
+    if (o) o.classList.remove('show');
+  }
 }
 
 // Active heading highlight on scroll
