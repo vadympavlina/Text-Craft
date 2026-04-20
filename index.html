@@ -2131,6 +2131,24 @@ async function exportPDF() {
     console.log('PDF wrap size:', wrap.offsetWidth, wrap.offsetHeight);
     console.log('PDF clone children:', clone.children.length);
 
+    // Debug: test html2canvas directly
+    if (!window.html2canvas) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+    const testCanvas = await html2canvas(wrap, { scale:1, logging:true, useCORS:true });
+    console.log('Canvas size:', testCanvas.width, testCanvas.height);
+    // Check if canvas has any non-white pixels
+    const ctx = testCanvas.getContext('2d');
+    const px = ctx.getImageData(0, 0, Math.min(100, testCanvas.width), Math.min(100, testCanvas.height)).data;
+    let nonWhite = 0;
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i] < 250 || px[i+1] < 250 || px[i+2] < 250) nonWhite++;
+    }
+    console.log('Non-white pixels in first 100x100:', nonWhite);
+    document.body.appendChild(testCanvas); // temporarily show canvas on page for visual check
+    setTimeout(() => testCanvas.remove(), 5000);
+
+    wrap.remove();
+    return; // stop here for now
+
     await html2pdf().set({
       margin: [15, 20, 15, 20],
       filename: name + '.pdf',
