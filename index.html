@@ -2124,6 +2124,10 @@ async function exportPDF() {
     // Wait for layout to settle
     await new Promise(r => setTimeout(r, 150));
 
+    console.log('PDF wrap HTML preview:', wrap.innerHTML.slice(0, 300));
+    console.log('PDF wrap size:', wrap.offsetWidth, wrap.offsetHeight);
+    console.log('PDF clone children:', clone.children.length);
+
     await html2pdf().set({
       margin: [15, 20, 15, 20],
       filename: name + '.pdf',
